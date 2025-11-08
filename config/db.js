@@ -9,14 +9,13 @@ const pool = new Pool({
 });
 
 // Tes koneksi saat pertama kali dijalankan
-pool.getConnection()
-    .then(connection => {
-        console.log('Berhasil terhubung ke database MariaDB!');
-        connection.release();
-    })
-    .catch(err => {
-        console.error('Gagal terhubung ke database:', err.message);
-    });
-
+pool.query('SELECT NOW()', (err, res) => {
+    if (err) {
+        console.error('Gagal terhubung ke database PostgreSQL:', err.message);
+    } else {
+        // 'res.rows[0].now' akan berisi waktu server database
+        console.log('Berhasil terhubung ke database PostgreSQL!');
+    }
+});
 // Ekspor "pool" ini agar bisa dipakai di file lain (terutama di Controller)
 module.exports = pool;
