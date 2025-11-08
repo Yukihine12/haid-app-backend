@@ -108,7 +108,7 @@ const catatLogHarian = async (req,res) => {
             ON CONFLICT (siklus_id, tanggal) DO UPDATE SET
                 data_json = EXCLUDED.data_json
         `;
-        await pool.query(sql, [siklus_id, tanggal, data_json_string]);
+        await pool.query(sql, [siklus_id, user_id, tanggal, data_json]);
         res.status(200).send({ message: "log harian berhasil dimasukkan!"})
     } catch (err) {
         console.error(err.message);
@@ -130,11 +130,11 @@ const HapusLogHarian = async (req,res) => {
     try {
         const { id } = req.params;
         const sql = "DELETE FROM log_harian WHERE ID = $1";
-        const [result] = await pool.query(sql, [id]);
-        if (result.affectedRows === 0) {
+        const { rowCount } = await pool.query(sql, [id]);
+        if (rowCount === 0) {
             return res.status(404).send({ message: 'Log tidak ditemukan, tidak ada yang dihapus' });
         }
-        res.status(200).send(rows);
+        res.status(200).send({ message: 'Log harian berhasil dihapus!' });
     } catch (err) {
         console.error(err.message);
         res.status(500).send({ message: 'Log tidak ditemukan'});

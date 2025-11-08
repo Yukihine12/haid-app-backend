@@ -9,8 +9,8 @@ const register = async (req,res) => {
             return res.status(400).send({ message: 'Email dan password tidak boleh kosong' });
         }
         const sqlCek = "SELECT ID FROM users WHERE email = $1";
-        const [users] = await pool.query(sqlCek, [email]);
-        if (users.length > 0) {
+        const { rows } = await pool.query(sqlCek, [email]);
+        if (rows.length > 0) {
             return res.status(400).send({ message: 'Email sudah terdaftar. Silakan login.' });
         }
         const salt = await bcrypt.genSalt(10); 
@@ -33,12 +33,12 @@ const login = async (req,res) => {
             return res.status(400).send({ message: 'Email dan password tidak boleh kosong' });
         }
         const sqlCek = "SELECT * FROM users WHERE email = $1";
-        const [users] = await pool.query(sqlCek, [email]);
+        const { rows } = await pool.query(sqlCek, [email]);
 
-        if (users.length === 0) {
+        if (rows.length === 0) {
             return res.status(400).send({ message: 'Email atau password salah' });
         }
-        const user = users[0];
+        const user = rows[0];
         const isMatch = await bcrypt.compare(password, user.password_hash);
 
         if (!isMatch) {
@@ -47,7 +47,7 @@ const login = async (req,res) => {
 
         const payload = {
             user: {
-                id: user.ID
+                id: user.id
             }
         };
         jwt.sign(
