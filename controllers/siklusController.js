@@ -2,7 +2,7 @@ const pool = require('../config/db');
 
 const getApiTest = async (req, res) => {
     try {
-        const [rows] = await pool.query('SELECT 1 + 1 AS solution'); 
+        const {rows} = await pool.query('SELECT 1 + 1 AS solution'); 
         res.send(`API Terhubung ke DB! Hasil tes: 1 + 1 = ${rows[0].solution}`);
     } 
     catch (err) {
@@ -26,7 +26,7 @@ const catatSiklusBaru = async (req, res) => {
 const getPrediksi = async (req, res) => {
     try {
         const sql = "SELECT tanggal_mulai, tanggal_selesai FROM siklus";
-        const [rows] = await pool.query(sql);
+        const {rows} = await pool.query(sql);
         if (rows.length === 0) {
             return res.status(200).send({ prediksi_rata_rata: 28 });
         }
@@ -50,7 +50,7 @@ const gettAllsiklus = async (req,res) => {
     try {
         const user_id = req.user.id;
         const sql ='SELECT * from siklus WHERE user_id = ?';
-        const [rows] = await pool.query(sql, [user_id]);
+        const {rows} = await pool.query(sql, [user_id]);
         res.status(200).send(rows);
     } 
     catch (err) {
@@ -62,7 +62,7 @@ const getSiklusById = async (req,res) => {
     try {
         const {id} = req.params;
         const sql = "SELECT * FROM siklus WHERE ID = ?";
-        const [rows] = await pool.query(sql, [id]);
+        const {rows} = await pool.query(sql, [id]);
         if (rows.length === 0 ){
             return res.status(404).send({ message : 'Data siklus tidak ditemukan'});   
         }
@@ -119,7 +119,7 @@ const getLogHarian = async (req,res) => {
     try {
         const { siklus_id } = req.params;
         const sql = "SELECT * FROM log_harian WHERE siklus_id = ? ORDER BY tanggal ASC";
-        const [rows] = await pool.query(sql, [siklus_id]);
+        const {rows} = await pool.query(sql, [siklus_id]);
         res.status(200).send(rows);
     } catch (err) {
         console.error(err.message);
