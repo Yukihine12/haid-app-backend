@@ -14,7 +14,7 @@ const catatSiklusBaru = async (req, res) => {
     try {
         const user_id = req.user.id;
         const {tanggal_mulai, tanggal_selesai} = req.body;
-        const sql = "INSERT INTO siklus (user_id, tanggal_mulai, tanggal_selesai) VALUES (?, ?, ?)";
+        const sql = "INSERT INTO siklus (user_id, tanggal_mulai, tanggal_selesai) VALUES ($1, $2, $3)";
         await pool.query(sql, [user_id, tanggal_mulai, tanggal_selesai]);
         res.status(201).send({ message: 'Siklus baru berhasil dicatat!' });
     } 
@@ -49,7 +49,7 @@ const getPrediksi = async (req, res) => {
 const gettAllsiklus = async (req,res) => {
     try {
         const user_id = req.user.id;
-        const sql ='SELECT * from siklus WHERE user_id = ?';
+        const sql ='SELECT * from siklus WHERE user_id = $1';
         const {rows} = await pool.query(sql, [user_id]);
         res.status(200).send(rows);
     } 
@@ -61,7 +61,7 @@ const gettAllsiklus = async (req,res) => {
 const getSiklusById = async (req,res) => {
     try {
         const {id} = req.params;
-        const sql = "SELECT * FROM siklus WHERE ID = ?";
+        const sql = "SELECT * FROM siklus WHERE ID = $1";
         const {rows} = await pool.query(sql, [id]);
         if (rows.length === 0 ){
             return res.status(404).send({ message : 'Data siklus tidak ditemukan'});   
@@ -77,7 +77,7 @@ const updateSiklus = async (req, res) => {
     try {
         const { id } = req.params;
         const { tanggal_mulai, tanggal_selesai } = req.body;
-        const sql = "UPDATE siklus SET tanggal_mulai = ?, tanggal_selesai = ? WHERE ID = ?";
+        const sql = "UPDATE siklus SET tanggal_mulai = $1, tanggal_selesai = $2 WHERE ID = $3";
         await pool.query(sql, [tanggal_mulai, tanggal_selesai, id]);
         res.status(200).send({ message: 'Data siklus berhasil di-update!' });
     } 
@@ -89,7 +89,7 @@ const updateSiklus = async (req, res) => {
 const deleteSiklus = async (req, res) => {
     try {
         const { id } = req.params;
-        const sql = "DELETE FROM siklus WHERE ID = ?";
+        const sql = "DELETE FROM siklus WHERE ID = $1";
         await pool.query(sql, [id]);
         res.status(200).send({ message: 'Data siklus berhasil dihapus!' });
     } catch (err) {
@@ -103,10 +103,10 @@ const catatLogHarian = async (req,res) => {
         const { tanggal, data_json} = req.body;
         const data_json_string = JSON.stringify(data_json);
         const sql = `
-            INSERT INTO log_harian (siklus_id, tanggal, data_json)
-            VALUES (?, ?, ?)
-            ON DUPLICATE KEY UPDATE
-                data_json = VALUES(data_json)
+            INSERT INTO log_harian (siklus_id, user_id, tanggal, data_json)
+            VALUES ($1, $2, $3, $4)
+            ON CONFLICT (siklus_id, tanggal) DO UPDATE SET
+                data_json = EXCLUDED.data_json
         `;
         await pool.query(sql, [siklus_id, tanggal, data_json_string]);
         res.status(200).send({ message: "log harian berhasil dimasukkan!"})
@@ -118,7 +118,7 @@ const catatLogHarian = async (req,res) => {
 const getLogHarian = async (req,res) => {
     try {
         const { siklus_id } = req.params;
-        const sql = "SELECT * FROM log_harian WHERE siklus_id = ? ORDER BY tanggal ASC";
+        const sql = "SELECT * FROM log_harian WHERE siklus_id = $1 ORDER BY tanggal ASC";
         const {rows} = await pool.query(sql, [siklus_id]);
         res.status(200).send(rows);
     } catch (err) {
@@ -129,7 +129,7 @@ const getLogHarian = async (req,res) => {
 const HapusLogHarian = async (req,res) => {
     try {
         const { id } = req.params;
-        const sql = "DELETE FROM log_harian WHERE ID = ?";
+        const sql = "DELETE FROM log_harian WHERE ID = $1";
         const [result] = await pool.query(sql, [id]);
         if (result.affectedRows === 0) {
             return res.status(404).send({ message: 'Log tidak ditemukan, tidak ada yang dihapus' });

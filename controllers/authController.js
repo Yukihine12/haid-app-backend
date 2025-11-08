@@ -8,14 +8,14 @@ const register = async (req,res) => {
         if(!email || !password){
             return res.status(400).send({ message: 'Email dan password tidak boleh kosong' });
         }
-        const sqlCek = "SELECT ID FROM users WHERE email = ?";
+        const sqlCek = "SELECT ID FROM users WHERE email = $1";
         const [users] = await pool.query(sqlCek, [email]);
         if (users.length > 0) {
             return res.status(400).send({ message: 'Email sudah terdaftar. Silakan login.' });
         }
         const salt = await bcrypt.genSalt(10); 
         const password_hash = await bcrypt.hash(password, salt);
-        const sqlInsert = "INSERT INTO users (email, password_hash) VALUES (?, ?)";
+        const sqlInsert = "INSERT INTO users (email, password_hash) VALUES ($1, $2)";
         await pool.query(sqlInsert, [email, password_hash]);
         res.status(201).send({ message: 'User berhasil terdaftar!' });
     } 
@@ -32,7 +32,7 @@ const login = async (req,res) => {
         if(!email || !password){
             return res.status(400).send({ message: 'Email dan password tidak boleh kosong' });
         }
-        const sqlCek = "SELECT * FROM users WHERE email = ?";
+        const sqlCek = "SELECT * FROM users WHERE email = $1";
         const [users] = await pool.query(sqlCek, [email]);
 
         if (users.length === 0) {
